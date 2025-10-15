@@ -1,0 +1,41 @@
+L1 = 40; L2 = 50;
+base_x = 30;   
+base_y = -20; 
+t = linspace(0, 2*pi, 300);
+r = 25 * cos(6*t) + 25;
+x = r .* cos(t);  
+y = r .* sin(t); 
+[q1, q2] = inverse_kinematics(x - base_x, y - base_y, L1, L2);
+figure('Position', [300, 300, 800, 600]);
+for i = 1:length(t)
+    x1 = L1 * cos(q1(i));
+    y1 = L1 * sin(q1(i));
+    x2 = x1 + L2 * cos(q1(i) + q2(i));
+    y2 = y1 + L2 * sin(q1(i) + q2(i));
+    plot([base_x, base_x + x1], [base_y, base_y + y1], 'b-', 'LineWidth', 3);
+    hold on;
+    plot([base_x + x1, base_x + x2], [base_y + y1, base_y + y2], 'r-', 'LineWidth', 3);
+    plot(base_x, base_y, 'ks', 'MarkerSize', 10, 'MarkerFaceColor', 'k');
+    plot(base_x + x1, base_y + y1, 'bo', 'MarkerSize', 8, 'MarkerFaceColor', 'b');
+    plot(base_x + x2, base_y + y2, 'ro', 'MarkerSize', 6, 'MarkerFaceColor', 'r');
+    if i > 1
+        plot(x(1:i), y(1:i), 'g-', 'LineWidth', 2);
+    end
+    axis equal; axis([-100 100 -100 100]); grid on;
+    hold off;    
+    pause(0.01);
+end
+function [q1, q2] = inverse_kinematics(x, y, L1, L2)
+    q1 = zeros(size(x));
+    q2 = zeros(size(x));
+    for i = 1:length(x)
+        D = (x(i)^2 + y(i)^2 - L1^2 - L2^2) / (2 * L1 * L2);
+        if abs(D) > 1
+            D = sign(D);
+        end
+        q2(i) = acos(D);
+        beta = atan2(y(i), x(i));
+        phi = atan2(L2 * sin(q2(i)), L1 + L2 * cos(q2(i)));
+        q1(i) = beta - phi;
+    end
+end
