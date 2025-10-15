@@ -1,0 +1,57 @@
+l1=50; l2=40;
+axis equal; axis([-100 100 -100 100]); grid on; hold on
+R = 30;   % Bán kính ngoài
+r = 12;   % Bán kính trong
+n = 5;
+theta_outer = (0:n-1)*(2*pi/n) + pi/2;   % xoay để đỉnh dưới
+theta_inner = theta_outer + pi/n;
+x_outer = R*cos(theta_outer);
+y_outer = R*sin(theta_outer);
+x_inner = r*cos(theta_inner);
+y_inner = r*sin(theta_inner);
+x = zeros(1, 2*n);
+y = zeros(1, 2*n);
+x(1:2:end) = x_outer;
+x(2:2:end) = x_inner;
+y(1:2:end) = y_outer;
+y(2:2:end) = y_inner;
+x(end+1) = x(1);
+y(end+1) = y(1);
+A = [-40 -20];
+pen=plot(nan,nan,'r-','LineWidth',2);
+arm=plot(nan,nan,'k-','LineWidth',3);
+joint=plot(nan,nan,'ko','MarkerFaceColor','k');
+pen_x=[]; pen_y=[];
+for i=1:length(x)
+    x0=x(i)-A(1); y0=y(i)-A(2);
+    c2=(x0^2+y0^2-l1^2-l2^2)/(2*l1*l2);
+    if abs(c2)>1, continue; end
+    s2=sqrt(1-c2^2); t2=atan2(s2,c2);
+    c1=x0*(l1+l2*c2)+y0*l2*s2;
+    s1=y0*(l1+l2*c2)-x0*l2*s2; t1=atan2(s1,c1);
+    B=A+[l1*cos(t1) l1*sin(t1)];
+    P=B+[l2*cos(t1+t2) l2*sin(t1+t2)];
+    pen_x=[pen_x P(1)]; pen_y=[pen_y P(2)];
+    set(pen,'XData',pen_x,'YData',pen_y)
+    set(arm,'XData',[A(1) B(1) P(1)],'YData',[A(2) B(2) P(2)])
+    set(joint,'XData',[A(1) B(1) P(1)],'YData',[A(2) B(2) P(2)])
+    drawnow limitrate; pause(0.3)
+end
+pause (0.5)
+for i=1:length(x)
+    x0=x(i)-A(1); y0=y(i)-A(2);
+    c2=(x0^2+y0^2-l1^2-l2^2)/(2*l1*l2);
+    if abs(c2)>1, continue; end
+    s2=sqrt(1-c2^2); t2=atan2(s2,c2);
+    c1=x0*(l1+l2*c2)+y0*l2*s2;
+    s1=y0*(l1+l2*c2)-x0*l2*s2; t1=atan2(s1,c1);
+    B=A+[l1*cos(t1) l1*sin(t1)];
+    P=B+[l2*cos(t1+t2) l2*sin(t1+t2)];
+    if ~isempty(pen_x)
+        pen_x(i)=NaN; pen_y(i)=NaN;
+        set(pen,'XData',pen_x,'YData',pen_y)
+    end
+    set(arm,'XData',[A(1) B(1) P(1)],'YData',[A(2) B(2) P(2)])
+    set(joint,'XData',[A(1) B(1) P(1)],'YData',[A(2) B(2) P(2)])
+    drawnow limitrate; pause(0.3)
+end
